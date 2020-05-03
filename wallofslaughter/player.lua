@@ -93,67 +93,45 @@ end
 
 function event_click_door(e)
   local door_id = e.door:GetDoorID();
-  local instance_id = nil;
-
-  local lockouts = {
-      { "Anguish_keldovan", "Anguish: Keldovan the Harrier" },
-      { "Anguish_jelvan", "Anguish: Rescing Jelvan" },
-	  { "Anguish_ture", "Anguish: Ture" },	  
-      { "Anguish_hanvar", "Anguish: Warden Hanvar" },
-      { "Anguish_amv", "Anguish: Arch Magus Vangi" },
-      { "Anguish_omm", "Anguish: Overlord Mata Muram" },
-      { "Anguish_lower_orb", "Anguish: Lower Globe of Discordant Energy" },
-      { "Anguish_upper_orb", "Anguish: Upper Globe of Discordant Energy" },
-      { "Anguish_augs", "Anguish: Replay Timer" }
-  };
   eq.debug("Door: " .. door_id .. " clicked");
 
   if (door_id == 3) then
-    instance_id = eq.get_instance_id('anguish', 0);
-    
-    if (instance_id ~= nil and instance_id ~= 0) then
-      e.self:MovePCInstance(317, instance_id, -9, -2466, -79, 510); -- Zone: anguish
+    local qglobals = eq.get_qglobals(e.self);
+    local has_signets = qglobals["oow_rss_taromani_insignias"]
+    local has_trials = qglobals["oow_mpg_raids_complete"]
 
-    -- if GM just give him an instance
-    elseif (e.self:Admin() >= 80 and e.self:GetGM()) then
-      instance_id = eq.create_instance('anguish', 0, 21600);
-      eq.assign_raid_to_instance(instance_id);
-      e.self:Message(14, "GM Exception: Anguish is open to you");
-      eq.set_global(instance_id.."_anguish_bit",tostring(0),7,"H6");
-    else 
-      local instance_requests = require("instance_requests");
-
-      -- If a Player has Anguish_augs then they can not start an instance of anguish.
-      local augs_check = instance_requests.CheckPlayersForLockout('raid', 'Anguish_augs', 'Anguish: Replay Timer', e.self);
-      if (augs_check ) then
-        e.self:Message(13, "The way to Anguish is blocked to your raid at this time");
+    -- zone entry gated via flag checks but expedition can be created if only requester is eligible
+    if (e.self:Admin() >= 80 and e.self:GetGM()) or (has_signets and has_trials) then
+      local anguish_door_open = eq.get_data("anguish_door_open") ~= "" and true or false
+      if not anguish_door_open then
+        eq.set_data("anguish_door_open", "1", "60s")
+        e.self:Message(15, "The door swings wide and allows you entrance to Anguish, the Fallen Palace.");
       else
-        -- Every member of the raid needs to have 2 quest_globals set: oow_rss_taromani_insignias and oow_mpg_raids_complete
-        local required_globals = {
-          {'oow_rss_taromani_insignias', "is not protected from the chaos magic in Mata Muram's citadel." },
-          {'oow_mpg_raids_complete', 'must complete the Muramite Proving Grounds raid trials'}
-        };
-        local request = instance_requests.ValidateRequest('raid', 'anguish', 0, 6, 54, 65, nil, required_globals, e.self, lockouts);
-        -- TODO: Need to review why i placed the flags check; shouldn't be needed but I added it for some 
-        -- reason.
-        -- if (request.valid and request.flags == 1) then
-        --   instance_requests.DisplayLockouts(e.self, e.self, lockouts);
-        -- elseif (request.valid and request.flags == 0) then
-        if (request.valid) then
-          instance_id = eq.create_instance('anguish', 0, 21600);
-          if (instance_id == 0) then
+        -- live uses this as a request message throttling mechanic, creation can still occur but no conflict messages
+        e.self:Message(13, "You can feel the door to Anguish opening underneath your hand.");
+      end
+
+      local dz = e.self:GetExpedition()
+      if dz.valid then
+        e.self:MovePCDynamicZone("anguish") -- only moves client if they have associated dz to target zone
+      else
+        dz = e.self:CreateExpedition("anguish", 0, 21600, "Anguish, the Fallen Palace", 6, 54, true, anguish_door_open)
+        if dz.valid then
+          dz:SetCompass("wallofslaughter", 1353.15, 1712.19, 109.001)      -- anguish compass coordinates (live packet confirmed)
+          dz:SetSafeReturn("wallofslaughter", 1349.13, 1715.00, 123.81, 0) -- in wos, outside anguish
+          dz:SetZoneInLocation(-9, -2466, -79, 0)                          -- zone in coordinates inside anguish (if not set, defaults to zone safecoords)
+
+          if dz:GetInstanceID() == 0 then
             e.self:Message(13, "Instance failed to be created, yell at a GM");
-          else
-            eq.assign_raid_to_instance(instance_id);
-
-            -- Set the lockout for the instance with the bits that represent the mobs that 
-            -- will be spawned by the zone_status upon entry
-            eq.set_global(instance_id.."_anguish_bit",tostring(request.flags),7,"H6");
-
-            eq.cross_zone_message_player_by_name(5, "GMFizban", "Anguish -- Instance: " .. instance_id);
-            e.self:Message(14, "The door swings wide and allows you entrance to Anguish, the Fallen Palace.");
           end
+          eq.cross_zone_message_player_by_name(5, "GMFizban", "Anguish -- Instance: " .. dz:GetInstanceID());
         end
+      end
+    else
+      if not has_trials then
+        e.self:Message(13, "You must complete the Muramite Proving Grounds raid trials."); -- unconfirmed message since live doesn't require this now?
+      elseif not has_signets then
+        e.self:Message(13, "Though you carry the seal to enter Anguish, the Fallen Palace, you would be torn asunder by the harsh environment were you to venture within.  You will need to find a way to protect yourself from the powers of Discord.");
       end
     end
   end

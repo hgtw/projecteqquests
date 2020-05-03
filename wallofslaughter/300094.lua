@@ -1,4 +1,8 @@
+local disabled = true
 function event_say(e)
+	if disabled then
+		return
+	end
 	-- this is a hack/work around until the expedition system is implemented.
 	if (e.message:findi("hail")) then
 		--e.other:Message(0,"You dare to take an [" .. eq.say_link("expedition",false,"expedition") .. "] in the [" .. eq.say_link("Citadel of Anguish",false,"Citadel of Anguish") .. "]?");
