@@ -107,19 +107,20 @@ function event_click_door(e)
         eq.set_data("anguish_door_open", "1", "60s")
         e.self:Message(15, "The door swings wide and allows you entrance to Anguish, the Fallen Palace.");
       else
-        -- live uses this as a request message throttling mechanic, creation can still occur but no conflict messages
+        -- live does seem to throttle creation requests during this message, not just messages
         e.self:Message(13, "You can feel the door to Anguish opening underneath your hand.");
       end
 
       local dz = e.self:GetExpedition()
       if dz.valid then
         e.self:MovePCDynamicZone("anguish") -- only moves client if they have associated dz to target zone
-      else
+      else --elseif not anguish_door_open then
         dz = e.self:CreateExpedition("anguish", 0, 21600, "Anguish, the Fallen Palace", 6, 54, true, anguish_door_open)
         if dz.valid then
           dz:SetCompass("wallofslaughter", 1353.15, 1712.19, 109.001)      -- anguish compass coordinates (live packet confirmed)
           dz:SetSafeReturn("wallofslaughter", 1349.13, 1715.00, 123.81, 0) -- in wos, outside anguish
           dz:SetZoneInLocation(-9, -2466, -79, 0)                          -- zone in coordinates inside anguish (if not set, defaults to zone safecoords)
+          dz:SetReplayLockoutOnMemberJoin(false)                           -- disable adding "Replay Timer" lockout automatically to newly added members, live doesn't add it for anguish after /dzadd
 
           if dz:GetInstanceID() == 0 then
             e.self:Message(13, "Instance failed to be created, yell at a GM");
