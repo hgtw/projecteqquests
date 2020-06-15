@@ -42,7 +42,7 @@ local LOWER_GLOBE_EVENT = 'Lower Globe of Discordant Energy'
 local UPPER_GLOBE_EVENT = 'Upper Globe of Discordant Energy'
 local REPLAY_EVENT      = 'Replay Timer'
 
-function setup_lockouts()
+function setup_lockouts(expedition)
 	Anguish_Lockouts = {
 		[317005] = {KELDOVAN_EVENT,    seconds('4d12h'), Spawn_keldovan},
 		[317004] = {JELVAN_EVENT,      seconds('4d12h'), Spawn_jelvan},
@@ -54,6 +54,19 @@ function setup_lockouts()
 		[2]      = {UPPER_GLOBE_EVENT, seconds('4d12h'), PH_uorb},
 		[3]      = {REPLAY_EVENT,      seconds('2h'),    PH_augs}
 	};
+
+	-- this associates events with npcs to prevent looting by characters that have
+	-- the event lockout from another expedition. this is to prevent exploiting
+	-- to gain additional loot by characters added after an event is completed
+	expedition:SetLootEventByNPCTypeID(317005, KELDOVAN_EVENT) -- keldovan's body
+	expedition:SetLootEventByNPCTypeID(317111, JELVAN_EVENT)   -- jelvan's keepsake chest
+	expedition:SetLootEventByNPCTypeID(317003, TURE_EVENT)     -- ture's body
+	expedition:SetLootEventByNPCTypeID(317002, HANVAR_EVENT)   -- hanvar's body
+	expedition:SetLootEventByNPCTypeID(317112, AMV_EVENT)      -- amv ornate chest
+	expedition:SetLootEventByNPCTypeID(317109, OMM_EVENT)      -- omm's body
+
+	-- the lower and upper orb events use the same npc type id (chest). these use
+	-- the more specific SetLootEventBySpawnID api after spawning the chests
 end
 
 function event_spawn(e)
@@ -63,7 +76,7 @@ function event_spawn(e)
 
 	local expedition = eq.get_expedition_by_instance_id(instance_id)
 	if expedition.valid then
-		setup_lockouts();
+		setup_lockouts(expedition);
 		for k,v in pairs(Anguish_Lockouts) do
 			if v[3] and not expedition:HasLockout(v[1]) then
 				v[3]() -- boss spawning function
@@ -112,7 +125,8 @@ function Check_lorb(expedition, lockout_name)
 			AddLockout(Anguish_Lockouts[1]);
 
 			if lockout_name == KELDOVAN_EVENT then
-				eq.spawn2(317087,0,0, -301 ,702, -201, 0); -- NPC: Orb_of_Discordant_Energy
+				local chest = eq.spawn2(317087,0,0, -301 ,702, -201, 0); -- NPC: Orb_of_Discordant_Energy
+				expedition:SetLootEventBySpawnID(chest:GetID(), LOWER_GLOBE_EVENT)
 			elseif lockout_name == JELVAN_EVENT then
 				eq.get_entity_list():GetNPCByNPCTypeID(317111):AddItem(47100,1); -- NPC: a_minor_scarab
 			end
@@ -134,9 +148,11 @@ function Check_uorb(expedition, lockout_name)
 			AddLockout(Anguish_Lockouts[2]);
 
 			if lockout_name == TURE_EVENT then
-				eq.spawn2(317087,0,0, 610, 3381, -12, 0); -- NPC: Orb_of_Discordant_Energy
+				local chest = eq.spawn2(317087,0,0, 610, 3381, -12, 0); -- NPC: Orb_of_Discordant_Energy
+				expedition:SetLootEventBySpawnID(chest:GetID(), UPPER_GLOBE_EVENT)
 			elseif lockout_name == HANVAR_EVENT then
-				eq.spawn2(317087,0,0, 478, 4390, 209, 0); -- NPC: Orb_of_Discordant_Energy
+				local chest = eq.spawn2(317087,0,0, 478, 4390, 209, 0); -- NPC: Orb_of_Discordant_Energy
+				expedition:SetLootEventBySpawnID(chest:GetID(), UPPER_GLOBE_EVENT)
 			end
 
 			spawned_orb = true
