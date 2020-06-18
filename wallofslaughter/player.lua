@@ -115,7 +115,7 @@ function event_click_door(e)
       if dz.valid then
         e.self:MovePCDynamicZone("anguish") -- only moves client if they have associated dz to target zone
       else --elseif not anguish_door_open then
-        dz = e.self:CreateExpedition("anguish", 0, 21600, "Anguish, the Fallen Palace", 6, 54, true, anguish_door_open)
+        dz = e.self:CreateExpedition("anguish", 0, 21600, "Anguish, the Fallen Palace", 6, 54, anguish_door_open)
         if dz.valid then
           dz:SetCompass("wallofslaughter", 1353.15, 1712.19, 109.001)      -- anguish compass coordinates (live packet confirmed)
           dz:SetSafeReturn("wallofslaughter", 1349.13, 1715.00, 123.81, 0) -- in wos, outside anguish
