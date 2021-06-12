@@ -94,7 +94,7 @@ local thundercrest_creator = { -- Thundercrest Isles: The Creator
 }
 
 local missions = {
-  [4790] = thundercrest_creator, -- The Creator [60]  "thundercrest_60"
+  [4793] = thundercrest_creator, -- The Creator [60]  "thundercrest_60"
   [4794] = thundercrest_creator, -- The Creator [65]  "thundercrest_65"
   [4795] = thundercrest_creator, -- The Creator [68+] "thundercrest_70"
 }
