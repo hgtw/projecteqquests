@@ -87,7 +87,7 @@
 -- zone version 11 is the only one with the correct zone long name but
 -- there's 3 difficulty level-versions for the creator. spawn conditions? more db versions?
 local thundercrest_creator = { -- Thundercrest Isles: The Creator
-  instance   = { zone="thundercrest", version=11, duration=eq.seconds("6h") },
+  instance   = { zone="thundercrest", version=instance_version.thundercrest_isles_the_creator },
   compass    = { zone="broodlands", x=1241.88, y=511.147, z=23.4192 },
   safereturn = { zone="broodlands", x=1242.0, y=526.0, z=27.0, h=0.0 },
   zonein     = { x=1641.0, y=-646.0, z=114.0, h=54.0 }
