@@ -7,8 +7,8 @@ function event_click_door(e)
   local door_id = e.door:GetDoorID()
   eq.debug("Door: " .. door_id)
 
-  if dz_switches[door_id] then
-    local dz = dz_switches[door_id]
+  local dz = dz_switches[door_id]
+  if dz then
     e.self:MovePCDynamicZone(dz.zone, dz.version, false)
   end
 end
