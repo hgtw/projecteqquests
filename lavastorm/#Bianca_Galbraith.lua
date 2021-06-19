@@ -1,75 +1,7 @@
 -- lavastorm/#Bianca_Galbraith.lua
 
---[[ notes
-  with glaring, level 110 grouped with 2 other 110s (apprenhensive and amiable) received nothing but message
-  with apprehensive, ungrouped, level 64 offered:
-    Simple Task [60]                   -- live task id 4778
-    Simple Task [65]                   -- live task id 4779
-    Simple Task [68+]                  -- live task id 4780
-    Throes of Contagion [60]           -- live task id 4803
-    Throes of Contagion [65]           -- live task id 4804
-    Throes of Contagion [68+]          -- live task id 4805
-  with amiable, level 110 grouped with 2 other 110s offered:
-    Holy Hour [68+]
-    Simple Task [68+]
-    The Creator [68+]
-    Scions of Thundercrest [68+]
-    Splitting the Storm [68+]
-    Throes of Contagion [68+]
-  with ally, level 89 shrouded (imp evoker) to 55, grouped with an 88
-    Holy Hour [68+]                    -- live task id 4774
-    Lair Unguarded [68+]               -- live task id 4777
-    Simple Task [68+]                  -- live task id 4780
-    The Creator [68+]                  -- live task id 4795
-    Scions of Thundercrest [68+]       -- live task id 4798
-    Splitting the Storm [68+]          -- live task id 4802
-    Throes of Contagion [68+]          -- live task id 4805
-    Behind Closed Doors [68+]          -- live task id 4808
-    House of the Autumn Rose [68+]     -- live task id 5070
-  with ally, level 89 shrouded to 55 grouped with a 64 offers all [60], [65], [68+] versions
-    The Creator [60]                   -- live task id 4793
-    The Creator [65]                   -- live task id 4794
-  with ally, level 89 NOT shrouded grouped with a 64 offered only [68+]
-  with ally, level 89 grouped with both 64 and 86, offered only the [68+] versions
-
-  Kanetheus Forestwalker mission task ids (ally, level 88 shrouded to 55, grouped with a 64)
-    Sudden Tremors [60]                -- live task id 4929
-    Sudden Tremors [65]                -- live task id 4930
-    Sudden Tremors [68+]               -- live task id 4931
-    Animated Statue Plans [60]         -- live task id 5526
-    Animated Statue Plans [65]         -- live task id 5527
-    Animated Statue Plans [68+]        -- live task id 5528
-    ... many more
-
-  Dark Reign side uses different task ids:
-  with apprehensive, level 88 shrouded (imp evoker) to 55 offered
-    Simple Task [68+]                  -- live task id 5043
-    Throes of Contagion [68+]          -- live task id 4976
-
-  accepting task on a level 86 with a level 55 shroud grouped
-    (Red) 8890: You can not be assigned this shared task because your party's level spread is too high.
-  minimum players validated after selection:
-    (Red) 8895: You can not be assigned this shared task because your party does not contain the minimum required number of players.
-  todo: confirm if a minimum level to request or if it just checks on accept
-  shroud level seemed to affect task offers, needs more testing
-  using /taskadd with a level 89 (shrouded 55) on a level 110 when in 'The Creator [60]'
-    (Red) 8969: You can not add this player because you would exceed the maximum level spread (21) for this shared task.
-    (Red) 8970: You can not add this player because their level exceeds the maximum level limit for this shared task.
-    (Red) 8917: <name> could not be invited to join you.
-  using /taskadd with a level 89 (shrouded 55) on a level 110 when in 'The Creator [65]'
-    (Red) 8969: You can not add this player because you would exceed the maximum level spread (23) for this shared task.
-    *This indicates each task may have its own maximum level spread variable in addition to max level and min players*
-  using /taskadd with 'The Creator [68]' gives level spread (30)
-  using /taskadd on a level 100 gives the same messages after disbanding the 64, it must be honoring shroud level
-  /taskquit on level 64, other members get (todo: check if leader only):
-    (Red) 8895: You can not be assigned this shared task because your party does not contain the minimum required number of players.
-    (Red) 8945: If your party does not meet the requirements in two minutes, the shared task will be terminated.
-  Shared task expired from minimum player count not being reached in 2 minutes:
-    (Yellow) 8951: Your shared task, 'The Creator [60]' has ended.
-]]
-
 --[[
-  The Creator sql with live task ids and first step (basics)
+  Testing sql with live task ids and first step (basics)
 
   todo: "touch" task objectives should be able to specify a switch (door) id and let source automatically update that way
 
@@ -77,27 +9,67 @@
   INSERT INTO `task_activities` VALUES (4780,0,1,11,'the portal to Thundercrest Isles','','-1','0','',0,2,1,0,'337',0),(4793,0,1,11,'the portal to Thundercrest Isles','','-1','0','',0,2,1,0,'337',0),(4794,0,1,11,'the portal to Thundercrest Isles','','-1','0','',0,2,1,0,'337',0),(4795,0,1,11,'the portal to Thundercrest Isles','','-1','0','',0,2,1,0,'337',0);
 --]]
 
--- todo: there's going to be so many of these, maybe define in a dedicated don-dz import
+-- todo: level scaling versions would need to be handled (3 level-based versions per mission)
+-- todo: consider implementing a compass switch id to get the coords more easily
+
+-- all Bianca missions use the same dz entrance
+local thundercrest_compass    = { zone="broodlands", x=1241.88, y=511.147, z=23.4192 } -- switch id 5
+local thundercrest_safereturn = { zone="broodlands", x=1242.0, y=526.0, z=27.0, h=0.0 }
+
 local simple_task = {
   instance   = { zone="thundercrest", version=instance_version.thundercrest_isles_simple_task },
-  compass    = { zone="broodlands", x=1241.88, y=511.147, z=23.4192 },
-  safereturn = { zone="broodlands", x=1242.0, y=526.0, z=27.0, h=0.0 }
+  compass    = thundercrest_compass,
+  safereturn = thundercrest_safereturn
 }
 
-local throes_of_contagion = {}
-local holy_hour = {}
-local lair_unguarded = {}
-local scions_of_thundercrest = {}
-local splitting_the_storm = {}
-local behind_closed_doors = {}
-local house_of_the_autumn_rose = {}
+local throes_of_contagion = {
+  instance   = { zone="thundercrest", version=instance_version.thundercrest_isles_throes_of_contagion },
+  compass    = thundercrest_compass,
+  safereturn = thundercrest_safereturn,
+}
 
--- todo: level scaling versions would need to be handled (3 level-based versions per mission)
+local scions_of_thundercrest = {
+  instance   = { zone="thundercrest", version=instance_version.thundercrest_isles_scions_of_thundercrest },
+  compass    = thundercrest_compass,
+  safereturn = thundercrest_safereturn
+}
+
+local splitting_the_storm = {
+  instance   = { zone="thundercrest", version=instance_version.thundercrest_isles_splitting_the_storm },
+  compass    = thundercrest_compass,
+  safereturn = thundercrest_safereturn
+}
+
+local holy_hour = {
+  instance   = { zone="thundercrest", version=instance_version.thundercrest_isles_holy_hour },
+  compass    = thundercrest_compass,
+  safereturn = thundercrest_safereturn
+}
+
 local the_creator = {
   instance   = { zone="thundercrest", version=instance_version.thundercrest_isles_the_creator },
-  compass    = { zone="broodlands", x=1241.88, y=511.147, z=23.4192 }, -- todo: lots of dzs to define, maybe implement compass switch id to get the coords more easily
-  safereturn = { zone="broodlands", x=1242.0, y=526.0, z=27.0, h=0.0 },
+  compass    = thundercrest_compass,
+  safereturn = thundercrest_safereturn,
   zonein     = { x=1641.0, y=-646.0, z=114.0, h=54.0 } -- todo: could be excluded if zone-in heading in table made accurate
+}
+
+local lair_unguarded = {
+  instance   = { zone="thundercrest", version=instance_version.thundercrest_isles_lair_unguarded },
+  compass    = thundercrest_compass,
+  safereturn = thundercrest_safereturn
+}
+
+local behind_closed_doors = {
+  instance   = { zone="thundercrest", version=instance_version.thundercrest_isles_behind_closed_doors },
+  compass    = thundercrest_compass,
+  safereturn = thundercrest_safereturn
+}
+
+-- todo: version for this is missing from db
+local house_of_the_autumn_rose = {
+--   instance   = { zone="thundercrest", version=instance_version. },
+  compass    = thundercrest_compass,
+  safereturn = thundercrest_safereturn
 }
 
 local missions = {
@@ -108,19 +80,29 @@ local missions = {
   [4804] = { min_faction = Faction.Apprehensive, dz = throes_of_contagion },   -- Throes of Contagion [65]
   [4805] = { min_faction = Faction.Apprehensive, dz = throes_of_contagion },   -- Throes of Contagion [68+]
 
+  [4796] = { min_faction = Faction.Indifferent, dz = scions_of_thundercrest }, -- Scions of Thundercrest [60]
+  [4797] = { min_faction = Faction.Indifferent, dz = scions_of_thundercrest }, -- Scions of Thundercrest [65]
   [4798] = { min_faction = Faction.Indifferent, dz = scions_of_thundercrest }, -- Scions of Thundercrest [68+]
+  [4800] = { min_faction = Faction.Indifferent, dz = splitting_the_storm },    -- Splitting the Storm [60]
+  [4801] = { min_faction = Faction.Indifferent, dz = splitting_the_storm },    -- Splitting the Storm [65]
   [4802] = { min_faction = Faction.Indifferent, dz = splitting_the_storm },    -- Splitting the Storm [68+]
 
+  [4772] = { min_faction = Faction.Amiable, dz = holy_hour },                  -- Holy Hour [60]
+  [4773] = { min_faction = Faction.Amiable, dz = holy_hour },                  -- Holy Hour [65]
   [4774] = { min_faction = Faction.Amiable, dz = holy_hour },                  -- Holy Hour [68+]
   [4793] = { min_faction = Faction.Amiable, dz = the_creator },                -- The Creator [60]  "thundercrest_60"
   [4794] = { min_faction = Faction.Amiable, dz = the_creator },                -- The Creator [65]  "thundercrest_65"
   [4795] = { min_faction = Faction.Amiable, dz = the_creator },                -- The Creator [68+] "thundercrest_70"
 
-  -- todo: need to confirm min factions below
-
+  [4775] = { min_faction = Faction.Kindly, dz = lair_unguarded },              -- Lair Unguarded [60]
+  [4776] = { min_faction = Faction.Kindly, dz = lair_unguarded },              -- Lair Unguarded [65]
   [4777] = { min_faction = Faction.Kindly, dz = lair_unguarded },              -- Lair Unguarded [68+]
+  [4806] = { min_faction = Faction.Kindly, dz = behind_closed_doors },         -- Behind Closed Doors [60]
+  [4807] = { min_faction = Faction.Kindly, dz = behind_closed_doors },         -- Behind Closed Doors [65]
   [4808] = { min_faction = Faction.Kindly, dz = behind_closed_doors },         -- Behind Closed Doors [68+]
 
+  [5068] = { min_faction = Faction.Warmly, dz = house_of_the_autumn_rose },    -- House of the Autumn Rose [60]
+  [5069] = { min_faction = Faction.Warmly, dz = house_of_the_autumn_rose },    -- House of the Autumn Rose [65]
   [5070] = { min_faction = Faction.Warmly, dz = house_of_the_autumn_rose },    -- House of the Autumn Rose [68+]
 }
 
