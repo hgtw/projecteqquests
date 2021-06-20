@@ -65,9 +65,8 @@ local behind_closed_doors = {
   safereturn = thundercrest_safereturn
 }
 
--- todo: version for this is missing from db
 local house_of_the_autumn_rose = {
---   instance   = { zone="thundercrest", version=instance_version. },
+  instance   = { zone="thundercrest", version=instance_version.thundercrest_isles_house_of_the_autumn_rose },
   compass    = thundercrest_compass,
   safereturn = thundercrest_safereturn
 }
