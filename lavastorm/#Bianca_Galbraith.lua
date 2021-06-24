@@ -28,9 +28,9 @@ local missions = {
   [4804] = { min_faction = Faction.Apprehensive, version = instance_version.thundercrest_isles_throes_of_contagion },   -- Throes of Contagion [65]
   [4805] = { min_faction = Faction.Apprehensive, version = instance_version.thundercrest_isles_throes_of_contagion },   -- Throes of Contagion [68+]
 
+  [4796] = { min_faction = Faction.Indifferent, version = instance_version.thundercrest_isles_scions_of_thundercrest }, -- Scions of Thundercrest [60]
   [4797] = { min_faction = Faction.Indifferent, version = instance_version.thundercrest_isles_scions_of_thundercrest }, -- Scions of Thundercrest [65]
   [4798] = { min_faction = Faction.Indifferent, version = instance_version.thundercrest_isles_scions_of_thundercrest }, -- Scions of Thundercrest [68+]
-  [4796] = { min_faction = Faction.Indifferent, version = instance_version.thundercrest_isles_scions_of_thundercrest }, -- Scions of Thundercrest [60]
   [4800] = { min_faction = Faction.Indifferent, version = instance_version.thundercrest_isles_splitting_the_storm },    -- Splitting the Storm [60]
   [4801] = { min_faction = Faction.Indifferent, version = instance_version.thundercrest_isles_splitting_the_storm },    -- Splitting the Storm [65]
   [4802] = { min_faction = Faction.Indifferent, version = instance_version.thundercrest_isles_splitting_the_storm },    -- Splitting the Storm [68+]
